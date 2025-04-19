@@ -1,0 +1,5 @@
+# file that contains the firebase service account key
+secrets/
+
+# firebase-admin virtual env
+firebase-venv/
