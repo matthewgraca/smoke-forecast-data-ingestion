@@ -5,5 +5,5 @@
 # ./ runs the command in a new shell, then exits
 # ~ the more you know ~
 
-source firebase-venv/bin/activate 
+conda activate firebase-env 
 export GOOGLE_APPLICATION_CREDENTIALS="/home/mgraca/Workspace/smoke-app/smoke-forecast-data-ingestion/secrets/smoke-forecast-visualizer-firebase-adminsdk-fbsvc-414e1a7cc5.json"
