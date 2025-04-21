@@ -3,3 +3,6 @@ secrets/
 
 # firebase-admin virtual env
 firebase-venv/
+
+# local data I want to hold off on putting in the repo
+data.json
