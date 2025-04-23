@@ -32,3 +32,26 @@ echo $GOOGLE_APPLICATION_CREDENTIALS
 1. Start the environment using `source start-env.sh`. This script:
     - Starts the `firebase-env` virtual environment
     - Sets the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of your service account file
+# Data info
+```
+<bound method Dataset.info of <xarray.Dataset> Size: 3MB
+Dimensions:            (y: 412, x: 376)
+Coordinates:
+    time               int64 8B ...
+    step               float64 8B ...
+    heightAboveGround  float64 8B ...
+    latitude           (y, x) float64 1MB ...
+    longitude          (y, x) float64 1MB ...
+    valid_time         float64 8B ...
+Dimensions without coordinates: y, x
+Data variables:
+    mdens              (y, x) float32 620kB ...
+Attributes:
+    GRIB_edition:            2
+    GRIB_centre:             kwbc
+    GRIB_centreDescription:  US National Weather Service - NCEP
+    GRIB_subCentre:          0
+    Conventions:             CF-1.7
+    institution:             US National Weather Service - NCEP
+    history:                 2025-04-23T14:13 GRIB to CDM+CF via cfgrib-0.9.1...>
+```
