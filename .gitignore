@@ -6,3 +6,6 @@ firebase-venv/
 
 # local data I want to hold off on putting in the repo
 data.json
+
+# python
+__pycache__
