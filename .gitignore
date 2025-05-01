@@ -9,3 +9,6 @@ data.json
 
 # python
 __pycache__
+
+# etc
+*.swp

@@ -19,7 +19,7 @@ class HRRRProcessor:
 
         # attributes
         self.data = data_xr
-        self.firebase_data = data_dict
+        self.data_dict = data_dict
 
     def __subregion_file(self, H, extent, extent_name, variable):
         """ Uses wgrib2 to subregion the grib file """
@@ -35,7 +35,7 @@ class HRRRProcessor:
         vars_to_drop = ['step', 'heightAboveGround', 'valid_time']
         data_xr_subset = data_xr.drop_attrs().drop_vars(vars_to_drop)
 
-        return data_xr.to_dict()
+        return data_xr_subset.to_dict()
 
     def __get_data(self, date, variable_name, extent, extent_name):
         """ Downloads HRRR data, subregions it, returning an xarray """
