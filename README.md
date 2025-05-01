@@ -5,6 +5,8 @@
     - https://firebase.google.com/docs/firestore/manage-data/add-data#python
 - Firebase admin API
     - https://firebase.google.com/docs/reference/admin
+- What is HRRR?
+    - https://rapidrefresh.noaa.gov/hrrr/
 # Setup
 You can follow this guide here: https://firebase.google.com/docs/admin/setup#python
 1. Download packages. We use `conda`.
@@ -34,18 +36,18 @@ echo $GOOGLE_APPLICATION_CREDENTIALS
     - Sets the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of your service account file
 # Data info
 ```
-<bound method Dataset.info of <xarray.Dataset> Size: 3MB
-Dimensions:            (y: 412, x: 376)
+<xarray.Dataset> Size: 92kB
+Dimensions:            (y: 69, x: 67)
 Coordinates:
     time               int64 8B ...
     step               float64 8B ...
     heightAboveGround  float64 8B ...
-    latitude           (y, x) float64 1MB ...
-    longitude          (y, x) float64 1MB ...
+    latitude           (y, x) float64 37kB ...
+    longitude          (y, x) float64 37kB ...
     valid_time         float64 8B ...
 Dimensions without coordinates: y, x
 Data variables:
-    mdens              (y, x) float32 620kB ...
+    mdens              (y, x) float32 18kB ...
 Attributes:
     GRIB_edition:            2
     GRIB_centre:             kwbc
@@ -53,5 +55,5 @@ Attributes:
     GRIB_subCentre:          0
     Conventions:             CF-1.7
     institution:             US National Weather Service - NCEP
-    history:                 2025-04-23T14:13 GRIB to CDM+CF via cfgrib-0.9.1...>
+    history:                 2025-04-30T19:03 GRIB to CDM+CF via cfgrib-0.9.1...
 ```
