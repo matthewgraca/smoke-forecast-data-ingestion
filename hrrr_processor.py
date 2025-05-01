@@ -18,8 +18,8 @@ class HRRRProcessor:
         data_dict = self.__process(data_xr)
 
         # attributes
-        self.data = data_xr
-        self.data_dict = data_dict
+        self.data_xr = data_xr
+        self.data_dict = data_dict 
 
     def __subregion_file(self, H, extent, extent_name, variable):
         """ Uses wgrib2 to subregion the grib file """
@@ -30,12 +30,22 @@ class HRRRProcessor:
         return subset_file
 
     def __process(self, data_xr):
-        """ Trims the xarray of its metadata and converts it to a dictionary """
-        # trim xarray
-        vars_to_drop = ['step', 'heightAboveGround', 'valid_time']
-        data_xr_subset = data_xr.drop_attrs().drop_vars(vars_to_drop)
+        """ Trims the xarray and converts it to a dictionary for firebase """
+        # xr -> dict, rename some variables for easier handling
+        xr_dict = data_xr.to_dict()
+        mdens_data = xr_dict['data_vars']['mdens']['data']
+        lon_data = xr_dict['coords']['longitude']['data']
+        lat_data = xr_dict['coords']['latitude']['data']
 
-        return data_xr_subset.to_dict()
+        data = {
+            'mdens'     : {str(i) : vals for i, vals in enumerate(mdens_data)},
+            'longitude' : {str(i) : vals for i, vals in enumerate(lon_data)},
+            'latitude'  : {str(i) : vals for i, vals in enumerate(lat_data)},
+            'time'      : {'data' : xr_dict['coords']['time']['data']},
+            'metadata'  : xr_dict['data_vars']['mdens']['attrs']
+        }
+
+        return data 
 
     def __get_data(self, date, variable_name, extent, extent_name):
         """ Downloads HRRR data, subregions it, returning an xarray """
