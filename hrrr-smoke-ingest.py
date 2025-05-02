@@ -32,12 +32,14 @@ def print_inventory(HP):
     print(HP.data_xr, "\n")
 
     # check out some values
-    print(f"🔑 Dictionary keys : {HP.data_dict.keys()}")
-    print(f"🚬 First mdens value : {HP.data_dict['mdens'][str(0)][0]}")
-    print(f"📍 First longitude value : {HP.data_dict['longitude'][str(0)][0]}")
-    print(f"📍 First latitude value : {HP.data_dict['latitude'][str(0)][0]}")
-    print(f"🕰️  Time : {HP.data_dict['time']['data']}")
-    print(f"📜 Metadata :")
+    print(
+        f"🔑 Dictionary keys: {HP.data_dict.keys()}\n"
+        f"🚬 First mdens value: {HP.data_dict['mdens'][str(0)][0]}\n"
+        f"📍 First longitude value: {HP.data_dict['longitude'][str(0)][0]}\n"
+        f"📍 First latitude value: {HP.data_dict['latitude'][str(0)][0]}\n"
+        f"🕰️  Time: {HP.data_dict['time']['data']}\n"
+        f"📜 Metadata:"
+    )
     for k, v in HP.data_dict['metadata'].items():
         print(f"\t{k} : {v}")
 
