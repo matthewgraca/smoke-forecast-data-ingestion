@@ -4,6 +4,7 @@ from firebase_admin import firestore
 import xarray as xr
 from hrrr_processor import HRRRProcessor
 import argparse
+import sys
 
 def argparser():
     """ Defines command line argument parser """
