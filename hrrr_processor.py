@@ -1,5 +1,6 @@
 from herbie import Herbie, wgrib2
 import xarray as xr
+import sys
 
 class HRRRProcessor:
     def __init__(
@@ -31,18 +32,27 @@ class HRRRProcessor:
 
     def __process(self, data_xr):
         """ Trims the xarray and converts it to a dictionary for firebase """
-        # xr -> dict, rename some variables for easier handling
         xr_dict = data_xr.to_dict()
-        mdens_data = xr_dict['data_vars']['mdens']['data']
-        lon_data = xr_dict['coords']['longitude']['data']
-        lat_data = xr_dict['coords']['latitude']['data']
+        try:
+            mdens_data = xr_dict['data_vars']['mdens']['data']
+            lon_data = xr_dict['coords']['longitude']['data']
+            lat_data = xr_dict['coords']['latitude']['data']
+            time_data = xr_dict['coords']['time']['data']
+            metadata_data = xr_dict['data_vars']['mdens']['attrs']
+        except Exception as e:
+            print(
+                f"🔴 Data returned an unexpected structure. " 
+                f"Are variables missing? "
+                f"{e}"
+            )
+            sys.exit(1)
 
         data = {
             'mdens'     : {str(i) : vals for i, vals in enumerate(mdens_data)},
             'longitude' : {str(i) : vals for i, vals in enumerate(lon_data)},
             'latitude'  : {str(i) : vals for i, vals in enumerate(lat_data)},
-            'time'      : {'data' : xr_dict['coords']['time']['data']},
-            'metadata'  : xr_dict['data_vars']['mdens']['attrs']
+            'time'      : {'data' : time_data},
+            'metadata'  : metadata_data 
         }
 
         return data 
