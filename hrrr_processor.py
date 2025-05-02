@@ -41,8 +41,8 @@ class HRRRProcessor:
             metadata_data = xr_dict['data_vars']['mdens']['attrs']
         except Exception as e:
             print(
-                f"🔴 Data returned an unexpected structure. " 
-                f"Are variables missing? "
+                f"🔴 Data returned an unexpected structure. ",
+                f"Are variables missing? ",
                 f"{e}"
             )
             sys.exit(1)
