@@ -34,6 +34,8 @@ echo $GOOGLE_APPLICATION_CREDENTIALS
 1. Start the environment using `source start-env.sh`. This script:
     - Starts the `firebase-env` virtual environment
     - Sets the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of your service account file
+2. Run the script `python hrrr-smoke-ingest.py`
+    - Comes with useful optional args. See: `python hrrr-smoke-ingest.py -h`
 # Data info
 ```
 <xarray.Dataset> Size: 92kB
