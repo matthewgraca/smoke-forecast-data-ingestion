@@ -5,6 +5,7 @@ import xarray as xr
 from hrrr_processor import HRRRProcessor
 import argparse
 import sys
+from functools import reduce
 
 def init_argparser():
     """ Defines command line argument parser """
@@ -29,11 +30,10 @@ def init_argparser():
 def data_inventory(HP):
     """ Creates a string of the inventory of the data processed """
     # generate string of dictionary items
-    dict_str = '\n'.join(
-        map(
-            lambda key_val: f"\t{key_val[0]}: {key_val[1]}", 
-            HP.data_dict['metadata'].items()
-        )
+    dict_str = reduce(
+        lambda acc, key_val: "\n".join([acc, f"\t{key_val[0]}: {key_val[1]}"]),
+        HP.data_dict['metadata'].items(),
+        str()
     )
     # examine full inventory and some values
     return (
@@ -43,7 +43,7 @@ def data_inventory(HP):
         f"📍 First longitude value: {HP.data_dict['longitude'][str(0)][0]}\n"
         f"📍 First latitude value: {HP.data_dict['latitude'][str(0)][0]}\n"
         f"🕰️  Time: {HP.data_dict['time']['data']}\n"
-        f"📜 Metadata:\n"
+        f"📜 Metadata:"
         f"{dict_str}\n"
     )
 
