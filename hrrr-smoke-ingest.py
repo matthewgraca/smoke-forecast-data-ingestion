@@ -32,29 +32,29 @@ def init_argparser():
 
     return parser
 
-def data_inventory(HP):
+def data_inventory(hrrr):
     """ Creates a string of the inventory of the data processed 
 
     Args:
-        HP (HRRRProcessor): The class containing the processed data.
+        hrrr (HRRRProcessor): The class containing the processed data.
 
     Returns:
         str: A string of the data's inventory an a subset of its values.
     """
     # convert dictionary -> string 
     dict_str = reduce(
-        lambda acc, key_val: str().join([acc, f"\t{key_val[0]}: {key_val[1]}\n"]),
-        HP.data_dict['metadata'].items(),
+        lambda acc, k_v: str().join([acc, f"\t{k_v[0]}: {k_v[1]}\n"]),
+        hrrr.data_dict['metadata'].items(),
         str()
     )
     # examine full inventory and some values
     return (
-        f"🗃️  Dataset inventory: {HP.data_xr}\n\n"
-        f"🔑 Dictionary keys: {HP.data_dict.keys()}\n"
-        f"🚬 First mdens value: {HP.data_dict['mdens'][str(0)][0]}\n"
-        f"📍 First longitude value: {HP.data_dict['longitude'][str(0)][0]}\n"
-        f"📍 First latitude value: {HP.data_dict['latitude'][str(0)][0]}\n"
-        f"🕰️  Time: {HP.data_dict['time']['data']}\n"
+        f"🗃️  Dataset inventory: {hrrr.data_xr}\n\n"
+        f"🔑 Dictionary keys: {hrrr.data_dict.keys()}\n"
+        f"🚬 First mdens value: {hrrr.data_dict['mdens'][str(0)][0]}\n"
+        f"📍 First longitude value: {hrrr.data_dict['longitude'][str(0)][0]}\n"
+        f"📍 First latitude value: {hrrr.data_dict['latitude'][str(0)][0]}\n"
+        f"🕰️  Time: {hrrr.data_dict['time']['data']}\n"
         f"📜 Metadata:\n"
         f"{dict_str}"
     )
@@ -65,12 +65,12 @@ def write_to_firebase(db, data, collection_name):
 
     Args:
         db (Client): The firestore client object.
-        data (dict): The data being written into the database.
+        hrrr (HRRRProcessor): The data being written into the database.
         collection_name (str): The name of the collection being updated.
     """
     try:
         print("✏️  Attempting to write to firebase database...")
-        for doc_name, payload in data.data_dict.items():
+        for doc_name, payload in hrrr.data_dict.items():
             db.collection(collection_name).document(doc_name).set(payload)
         print("✅ Success!")
     except Exception as e:
@@ -99,7 +99,7 @@ def main():
     parser = init_argparser()
     args = parser.parse_args()
 
-    HP = HRRRProcessor(
+    hrrr = HRRRProcessor(
         date="2025-01-16", 
         variable_name='MASSDEN',
         lon_min=-119.1,
@@ -110,14 +110,14 @@ def main():
     )
 
     if args.print:
-        print(data_inventory(HP))
+        print(data_inventory(hrrr))
 
     if args.no_write:
         print("⏭️  Skipping the write to database.")
     else:
         db = connect_to_firebase()
         collection_name = 'hrrr-smoke-data'
-        write_to_firebase(db, HP, collection_name)
+        write_to_firebase(db, hrrr, collection_name)
 
 if __name__ == "__main__":
     main()
