@@ -6,14 +6,14 @@ from hrrr_processor import HRRRProcessor
 import argparse
 import sys
 
-def argparser():
+def init_argparser():
     """ Defines command line argument parser """
     parser = argparse.ArgumentParser()
     # print argument
     parser.add_argument(
         "-p", 
         "--print", 
-        help="prints xarray data inventory to stdout", 
+        help="prints inventory of ingested data to standard output", 
         action="store_true"
     )
     # no write to database argument
@@ -26,27 +26,41 @@ def argparser():
 
     return parser
 
-def print_inventory(HP):
-    """ Prints inventory of the data processed """
-    # examine full inventory
-    print(HP.data_xr, "\n")
-
-    # check out some values
-    print(
+def data_inventory(HP):
+    """ Creates a string of the inventory of the data processed """
+    # generate string of dictionary items
+    dict_str = '\n'.join(
+        map(
+            lambda key_val: f"\t{key_val[0]}: {key_val[1]}", 
+            HP.data_dict['metadata'].items()
+        )
+    )
+    # examine full inventory and some values
+    return (
+        f"🗃️  Dataset inventory: {HP.data_xr}\n\n"
         f"🔑 Dictionary keys: {HP.data_dict.keys()}\n"
         f"🚬 First mdens value: {HP.data_dict['mdens'][str(0)][0]}\n"
         f"📍 First longitude value: {HP.data_dict['longitude'][str(0)][0]}\n"
         f"📍 First latitude value: {HP.data_dict['latitude'][str(0)][0]}\n"
         f"🕰️  Time: {HP.data_dict['time']['data']}\n"
-        f"📜 Metadata:"
+        f"📜 Metadata:\n"
+        f"{dict_str}\n"
     )
-    for k, v in HP.data_dict['metadata'].items():
-        print(f"\t{k} : {v}")
 
-def write_to_firebase(HP):
-    collection_name = 'hrrr-smoke-data'
+def write_to_firebase(db, data, collection_name):
+    """ Attempts to write the data into the firebase database """
+    try:
+        print("✏️  Attempting to write to firebase database...")
+        for doc_name, payload in data.data_dict.items():
+            db.collection(collection_name).document(doc_name).set(payload)
+        print("✅ Success!")
+    except Exception as e:
+        print("🔴 Error occurred while adding data to firebase:", e)
+        sys.exit(1)
 
-    # attempt connect to firebase database
+def connect_to_firebase():
+    """ Attempts to connect to the firebase database. 
+        Returns the database client """
     try:
         print("🔎 Connecting to firebase database...")
         default_app = firebase_admin.initialize_app()
@@ -56,18 +70,10 @@ def write_to_firebase(HP):
         print("🔴 Error occurred while connecting to firebase:", e)
         sys.exit(1)
 
-    # attempt write to firebase
-    try:
-        print("✏️  Attempting to write to firebase database...")
-        for doc_name, payload in HP.data_dict.items():
-            db.collection(collection_name).document(doc_name).set(payload)
-        print("✅ Success!")
-    except Exception as e:
-        print("🔴 Error occurred while adding data to firebase:", e)
-        sys.exit(1)
+    return db
 
 def main():
-    parser = argparser()
+    parser = init_argparser()
     args = parser.parse_args()
 
     HP = HRRRProcessor(
@@ -81,12 +87,14 @@ def main():
     )
 
     if args.print:
-        print_inventory(HP)
+        print(data_inventory(HP))
 
     if args.no_write:
         print("⏭️  Skipping the write to database.")
     else:
-        write_to_firebase(HP)
+        db = connect_to_firebase()
+        collection_name = 'hrrr-smoke-data'
+        write_to_firebase(db, HP, collection_name)
 
 if __name__ == "__main__":
     main()
