@@ -8,7 +8,12 @@ import sys
 from functools import reduce
 
 def init_argparser():
-    """ Defines command line argument parser """
+    """ 
+    Defines command line argument parser 
+
+    Returns:
+        ArgumentParser: The initialized argument parser.
+    """
     parser = argparse.ArgumentParser()
     # print argument
     parser.add_argument(
@@ -28,10 +33,17 @@ def init_argparser():
     return parser
 
 def data_inventory(HP):
-    """ Creates a string of the inventory of the data processed """
-    # generate string of dictionary items
+    """ Creates a string of the inventory of the data processed 
+
+    Args:
+        HP (HRRRProcessor): The class containing the processed data.
+
+    Returns:
+        str: A string of the data's inventory an a subset of its values.
+    """
+    # convert dictionary -> string 
     dict_str = reduce(
-        lambda acc, key_val: "\n".join([acc, f"\t{key_val[0]}: {key_val[1]}"]),
+        lambda acc, key_val: str().join([acc, f"\t{key_val[0]}: {key_val[1]}\n"]),
         HP.data_dict['metadata'].items(),
         str()
     )
@@ -43,12 +55,19 @@ def data_inventory(HP):
         f"📍 First longitude value: {HP.data_dict['longitude'][str(0)][0]}\n"
         f"📍 First latitude value: {HP.data_dict['latitude'][str(0)][0]}\n"
         f"🕰️  Time: {HP.data_dict['time']['data']}\n"
-        f"📜 Metadata:"
-        f"{dict_str}\n"
+        f"📜 Metadata:\n"
+        f"{dict_str}"
     )
 
 def write_to_firebase(db, data, collection_name):
-    """ Attempts to write the data into the firebase database """
+    """ 
+    Attempts to write the data into the firebase database.
+
+    Args:
+        db (Client): The firestore client object.
+        data (dict): The data being written into the database.
+        collection_name (str): The name of the collection being updated.
+    """
     try:
         print("✏️  Attempting to write to firebase database...")
         for doc_name, payload in data.data_dict.items():
@@ -59,8 +78,12 @@ def write_to_firebase(db, data, collection_name):
         sys.exit(1)
 
 def connect_to_firebase():
-    """ Attempts to connect to the firebase database. 
-        Returns the database client """
+    """ 
+    Attempts to connect to the firebase database. 
+
+    Returns:
+        db (Client): The firebase database client.
+    """
     try:
         print("🔎 Connecting to firebase database...")
         default_app = firebase_admin.initialize_app()
