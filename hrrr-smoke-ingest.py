@@ -9,45 +9,44 @@ from functools import reduce
 
 def init_argparser():
     """ 
-    Defines command line argument parser 
+    Initializes and returns the command-line argument parser.
 
     Returns:
-        ArgumentParser: The initialized argument parser.
+        argparse.ArgumentParser: Parser configured with arguments for 
+        printing data and skipping Firebase writes.
     """
     parser = argparse.ArgumentParser()
-    # print argument
     parser.add_argument(
         "-p", 
         "--print", 
         help="prints inventory of ingested data to standard output", 
         action="store_true"
     )
-    # no write to database argument
     parser.add_argument(
         "-nw", 
         "--no-write", 
         help="prevents program from writing data into firebase database", 
         action="store_true"
     )
-
     return parser
 
 def data_inventory(hrrr):
-    """ Creates a string of the inventory of the data processed 
+    """
+    Generates a human-readable summary of the processed HRRR data.
 
     Args:
-        hrrr (HRRRProcessor): The class containing the processed data.
+        hrrr (HRRRProcessor): Instance containing xarray and dictionary-formatted
+            HRRR data.
 
     Returns:
-        str: A string of the data's inventory an a subset of its values.
+        str: Formatted summary string showing dataset structure, key data 
+        points, and metadata.
     """
-    # convert dictionary -> string 
     dict_str = reduce(
         lambda acc, k_v: str().join([acc, f"\t{k_v[0]}: {k_v[1]}\n"]),
         hrrr.data_dict['metadata'].items(),
         str()
     )
-    # examine full inventory and some values
     return (
         f"🗃️  Dataset inventory: {hrrr.data_xr}\n\n"
         f"🔑 Dictionary keys: {hrrr.data_dict.keys()}\n"
@@ -60,17 +59,20 @@ def data_inventory(hrrr):
     )
 
 def write_to_firebase(db, data, collection_name):
-    """ 
-    Attempts to write the data into the firebase database.
+    """
+    Writes the HRRR data to a Firestore collection in Firebase.
 
     Args:
-        db (Client): The firestore client object.
-        hrrr (HRRRProcessor): The data being written into the database.
-        collection_name (str): The name of the collection being updated.
+        db (firestore.Client): Firestore database client.
+        data (HRRRProcessor): Processed HRRR data to write.
+        collection_name (str): Name of the Firestore collection to update.
+
+    Raises:
+        SystemExit: If an error occurs during the write process.
     """
     try:
         print("✏️  Attempting to write to firebase database...")
-        for doc_name, payload in hrrr.data_dict.items():
+        for doc_name, payload in data.data_dict.items():
             db.collection(collection_name).document(doc_name).set(payload)
         print("✅ Success!")
     except Exception as e:
@@ -78,11 +80,14 @@ def write_to_firebase(db, data, collection_name):
         sys.exit(1)
 
 def connect_to_firebase():
-    """ 
-    Attempts to connect to the firebase database. 
+    """
+    Initializes and returns a connection to the Firebase Firestore database.
 
     Returns:
-        db (Client): The firebase database client.
+        firestore.Client: Authenticated Firestore client.
+
+    Raises:
+        SystemExit: If the connection attempt fails.
     """
     try:
         print("🔎 Connecting to firebase database...")
@@ -92,10 +97,14 @@ def connect_to_firebase():
     except Exception as e:
         print("🔴 Error occurred while connecting to firebase:", e)
         sys.exit(1)
-
     return db
 
 def main():
+    """
+    Entry point of the script. Processes HRRR data for a specific region
+    and date, optionally prints the data inventory, and writes the data
+    to Firebase unless suppressed with a command-line argument.
+    """
     parser = init_argparser()
     args = parser.parse_args()
 
