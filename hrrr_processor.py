@@ -103,10 +103,18 @@ class HRRRProcessor:
             )
             sys.exit(1)
 
+        def enumerate_list(l):
+            """ Enumerates a list and produces a dictionary where the key is
+                an int converted to a string.
+                Example: {'0' : value}
+            """
+            # cv = (count, value)
+            return dict(map(lambda cv: (str(cv[0]), cv[1]), enumerate(l)))
+
         data = {
-            "mdens": {str(i): vals for i, vals in enumerate(mdens_data)},
-            "longitude": {str(i): vals for i, vals in enumerate(lon_data)},
-            "latitude": {str(i): vals for i, vals in enumerate(lat_data)},
+            "mdens": enumerate_list(mdens_data),
+            "longitude": enumerate_list(lon_data),
+            "latitude": enumerate_list(lat_data),
             "time": {"data": time_data},
             "metadata": metadata_data
         }
