@@ -23,10 +23,9 @@ echo $GOOGLE_APPLICATION_CREDENTIALS
 ```
 # Usage
 ## Running the data ingestion script
-1. Start the environment using `source start-env.sh`. This script:
-    - Starts the `firebase-env` virtual environment
-    - Sets the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of your service account file
-2. Run the script `python hrrr-smoke-ingest.py`
+1. Activate the `firebase-env` using `conda`.
+2. Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to path of your service account json file.
+3. Run the script `python hrrr-smoke-ingest.py`
     - Comes with useful optional args. See: `python hrrr-smoke-ingest.py -h`
 ## Accessing variables
 Suppose `i` and `j` are indices. There are currently five variables you have access to. Please note the dimensions of the variables are (y, x):
@@ -42,7 +41,7 @@ Suppose `i` and `j` are indices. There are currently five variables you have acc
     - Access: `db['hrrr-smoke-data']['metadata']`
 # Data info
 ```
-<xarray.Dataset> Size: 92kB
+🗃️ Dataset inventory: <xarray.Dataset> Size: 92kB
 Dimensions:            (y: 69, x: 67)
 Coordinates:
     time               int64 8B 1736985600
@@ -61,48 +60,48 @@ Attributes:
     GRIB_subCentre:          0
     Conventions:             CF-1.7
     institution:             US National Weather Service - NCEP
-    history:                 2025-05-02T15:17 GRIB to CDM+CF via cfgrib-0.9.1... 
+    history:                 2025-05-06T16:13 GRIB to CDM+CF via cfgrib-0.9.1...
 
 🔑 Dictionary keys: dict_keys(['mdens', 'longitude', 'latitude', 'time', 'metadata'])
 🚬 First mdens value: 2.000000026702864e-10
 📍 First longitude value: 241.010809
 📍 First latitude value: 32.97486599999999
-🕰️  Time: 1736985600
+🕰️ Time: 1736985600
 📜 Metadata:
-	GRIB_paramId : 400000
-	GRIB_dataType : fc
-	GRIB_numberOfPoints : 4623
-	GRIB_typeOfLevel : heightAboveGround
-	GRIB_stepUnits : 1
-	GRIB_stepType : instant
-	GRIB_gridType : lambert
-	GRIB_uvRelativeToGrid : 1
-	GRIB_DxInMetres : 3000.0
-	GRIB_DyInMetres : 3000.0
-	GRIB_LaDInDegrees : 38.5
-	GRIB_Latin1InDegrees : 38.5
-	GRIB_Latin2InDegrees : 38.5
-	GRIB_LoVInDegrees : 262.5
-	GRIB_NV : 0
-	GRIB_Nx : 67
-	GRIB_Ny : 69
-	GRIB_cfName : unknown
-	GRIB_cfVarName : mdens
-	GRIB_gridDefinitionDescription : Lambert Conformal can be secant or tangent, conical or bipolar
-	GRIB_iScansNegatively : 0
-	GRIB_jPointsAreConsecutive : 0
-	GRIB_jScansPositively : 1
-	GRIB_latitudeOfFirstGridPointInDegrees : 32.974866
-	GRIB_latitudeOfSouthernPoleInDegrees : 0.0
-	GRIB_longitudeOfFirstGridPointInDegrees : 241.010809
-	GRIB_longitudeOfSouthernPoleInDegrees : 0.0
-	GRIB_missingValue : 3.4028234663852886e+38
-	GRIB_name : Mass density
-	GRIB_shortName : mdens
-	GRIB_units : kg m**-3
-	long_name : Mass density
-	units : kg m**-3
-	standard_name : unknown
+	GRIB_paramId: 400000
+	GRIB_dataType: fc
+	GRIB_numberOfPoints: 4623
+	GRIB_typeOfLevel: heightAboveGround
+	GRIB_stepUnits: 1
+	GRIB_stepType: instant
+	GRIB_gridType: lambert
+	GRIB_uvRelativeToGrid: 1
+	GRIB_DxInMetres: 3000.0
+	GRIB_DyInMetres: 3000.0
+	GRIB_LaDInDegrees: 38.5
+	GRIB_Latin1InDegrees: 38.5
+	GRIB_Latin2InDegrees: 38.5
+	GRIB_LoVInDegrees: 262.5
+	GRIB_NV: 0
+	GRIB_Nx: 67
+	GRIB_Ny: 69
+	GRIB_cfName: unknown
+	GRIB_cfVarName: mdens
+	GRIB_gridDefinitionDescription: Lambert Conformal can be secant or tangent, conical or bipolar
+	GRIB_iScansNegatively: 0
+	GRIB_jPointsAreConsecutive: 0
+	GRIB_jScansPositively: 1
+	GRIB_latitudeOfFirstGridPointInDegrees: 32.974866
+	GRIB_latitudeOfSouthernPoleInDegrees: 0.0
+	GRIB_longitudeOfFirstGridPointInDegrees: 241.010809
+	GRIB_longitudeOfSouthernPoleInDegrees: 0.0
+	GRIB_missingValue: 3.4028234663852886e+38
+	GRIB_name: Mass density
+	GRIB_shortName: mdens
+	GRIB_units: kg m**-3
+	long_name: Mass density
+	units: kg m**-3
+	standard_name: unknown
 ```
 # Resources
 - Setting up a private server and connecting it to your firebase project
