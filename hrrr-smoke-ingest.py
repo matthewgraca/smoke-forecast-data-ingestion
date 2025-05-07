@@ -58,6 +58,20 @@ def data_inventory(hrrr):
         f"{dict_str}"
     )
 
+def size_in_MB(data):
+    """
+    The size of the data that will be written to firebase. Approximated,
+    since Firebase is very mysterious on how much you've actually written.
+
+    Args:
+        data (HRRRProcessor): Processed HRRR data to write.
+
+    Returns:
+        float: The size of the data in megabytes.
+    """
+    bytes_per_MB = 1000000
+    return len(json.dumps(data.data_dict).encode('utf-8')) / bytes_per_MB
+
 def write_to_firebase(db, data, collection_name):
     """
     Writes the HRRR data to a Firestore collection in Firebase.
@@ -74,7 +88,7 @@ def write_to_firebase(db, data, collection_name):
         print("✏️  Attempting to write to firebase database...")
         for doc_name, payload in data.data_dict.items():
             db.collection(collection_name).document(doc_name).set(payload)
-        print("✅ Success!")
+        print(f"✅ Success! {size_in_MB(data):.2f}MB written.")
     except Exception as e:
         print("🔴 Error occurred while adding data to firebase:", e)
         sys.exit(1)
