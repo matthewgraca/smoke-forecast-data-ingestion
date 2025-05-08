@@ -6,6 +6,7 @@ from hrrr_processor import HRRRProcessor
 import argparse
 import sys
 from functools import reduce
+import json
 
 def init_argparser():
     """ 
@@ -84,7 +85,7 @@ def size_in_MB(data):
         float: The size of the data in megabytes.
     """
     bytes_per_MB = 1000000
-    return len(json.dumps(data.data_dict).encode('utf-8')) / bytes_per_MB
+    return len(json.dumps(data).encode('utf-8')) / bytes_per_MB
 
 def write_to_firebase(db, data, collection_name):
     """
@@ -102,7 +103,12 @@ def write_to_firebase(db, data, collection_name):
         print("✏️  Attempting to write to firebase database...")
         for doc_name, payload in data.data_dict.items():
             db.collection(collection_name).document(doc_name).set(payload)
-        print(f"✅ Success! {size_in_MB(data):.2f}MB written.")
+        db.collection(collection_name).document("description").set(data.data_desc_dict)
+        print(
+            f"✅ Success! "
+            f"{(size_in_MB(data.data_dict) + size_in_MB(data.data_desc_dict)):.2f}"
+            f"MB written."
+        )
     except Exception as e:
         print("🔴 Error occurred while adding data to firebase:", e)
         sys.exit(1)
@@ -147,7 +153,6 @@ def main():
     )
 
     if args.print:
-        print(hrrr.data_desc_dict)
         print(data_inventory(hrrr))
 
     if args.no_write:
