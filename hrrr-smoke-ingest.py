@@ -7,6 +7,7 @@ import argparse
 import sys
 from functools import reduce
 import json
+import traceback
 
 def init_argparser():
     """ 
@@ -60,15 +61,18 @@ def data_inventory(hrrr):
         str: Formatted summary string showing dataset structure, key data 
         points, and metadata.
     """
+    first_frame = hrrr.data_dict[0]
     return (
-        f"🗃️  Dataset inventory: {hrrr.data_xr}\n\n"
-        f"🔑 Dictionary keys: {hrrr.data_dict.keys()}\n"
-        f"🚬 First smoke value: {hrrr.data_dict['mdens'][str(0)][0]}\n"
-        f"📍 First longitude value: {hrrr.data_dict['longitude'][str(0)][0]}\n"
-        f"📍 First latitude value: {hrrr.data_dict['latitude'][str(0)][0]}\n"
-        f"🕰️  Time: {hrrr.data_dict['time']['data']}\n"
+        f"⛈️  Number of forecasts: {len(hrrr.data_xr)}\n"
+        f"Examining a the first forecast frame...\n"
+        f"🗃️  Dataset inventory: {hrrr.data_xr[0]}\n\n"
+        f"🔑 Dictionary keys: {first_frame.keys()}\n"
+        f"🚬 First smoke value: {first_frame['mdens'][str(0)][0]}\n"
+        f"📍 First longitude value: {first_frame['longitude'][str(0)][0]}\n"
+        f"📍 First latitude value: {first_frame['latitude'][str(0)][0]}\n"
+        f"🕰️  Time: {first_frame['time']['data']}\n"
         f"📜 Metadata:\n"
-        f"{dict_to_str(hrrr.data_dict['metadata'])}\n"
+        f"{dict_to_str(first_frame['metadata'])}\n"
         f"🔬 Product description:\n"
         f"{dict_to_str(hrrr.data_desc_dict)}"
     )
@@ -96,14 +100,13 @@ def add_payload_to_firebase(db, collection_name, doc_and_payload):
     db.collection(collection_name).document(doc).set(payload)
     return doc_and_payload
 
-def write_to_firebase(db, data, collection_name):
+def write_to_firebase(db, data):
     """
     Writes the HRRR data to a Firestore collection in Firebase.
 
     Args:
         db (firestore.Client): Firestore database client.
         data (HRRRProcessor): Processed HRRR data to write.
-        collection_name (str): Name of the Firestore collection to update.
 
     Raises:
         SystemExit: If an error occurs during the write process.
@@ -111,21 +114,39 @@ def write_to_firebase(db, data, collection_name):
     try:
         print("✏️  Attempting to write to firebase database...")
         # write data description once
-        db.collection(collection_name).document("description").set(data.data_desc_dict)
+        add_payload_to_firebase(
+            db=db, 
+            collection_name="hrrr-model-description", 
+            doc_and_payload=("description", data.data_desc_dict)
+        )
 
         # write every frame
-        map(
-            lambda item: add_doc_to_firebase(db, collection_name, item),
-            data.data_dict.items()
-        )
+        # list() is needed to force execution of map()
+        '''
+        list(map(
+            lambda item: add_payload_to_firebase(db, item[0], item[1].items()),
+            zip(
+                # collection names
+                map(lambda x: f"f{str(x).zfill(2)}", range(0, 24)),
+                # dict items
+                data.data_dict
+            )
+        ))
+        '''
+
+        fxx = list(map(lambda x: f"f{str(x).zfill(2)}", range(0, 24)))
+        for i, d in enumerate(data.data_dict):
+            for doc_and_payload in d.items():
+                add_payload_to_firebase(db, fxx[i], doc_and_payload)
 
         print(
             f"✅ Success! "
-            f"{(size_in_MB(data.data_dict) + size_in_MB(data.data_desc_dict)):.2f}"
+            f"{reduce(lambda acc, x: acc + size_in_MB(x), data.data_dict, 0):.2f}"
             f"MB written."
         )
     except Exception as e:
-        print("🔴 Error occurred while adding data to firebase:", e)
+        print("🔴 Error occurred while adding data to firebase")
+        print(traceback.format_exc())
         sys.exit(1)
 
 def connect_to_firebase():
@@ -158,7 +179,7 @@ def main():
     args = parser.parse_args()
 
     hrrr = HRRRProcessor(
-        date="2025-01-16", 
+        date="2025-01-10", 
         variable_name='MASSDEN',
         lon_min=-119.1,
         lon_max=-117.3,
@@ -174,8 +195,7 @@ def main():
         print("⏭️  Skipping the write to database.")
     else:
         db = connect_to_firebase()
-        collection_name = 'hrrr-smoke-data'
-        write_to_firebase(db, hrrr, collection_name)
+        write_to_firebase(db, hrrr)
 
 if __name__ == "__main__":
     main()

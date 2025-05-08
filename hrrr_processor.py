@@ -1,7 +1,9 @@
-from herbie import Herbie, wgrib2
+from herbie import Herbie, FastHerbie, wgrib2
 import xarray as xr
 import sys
 from typing import Tuple, Dict, Any
+import pandas as pd
+from functools import reduce
 
 
 class HRRRProcessor:
@@ -44,19 +46,31 @@ class HRRRProcessor:
             extent_name (str): A label for the geographical extent.
         """
         extent = (lon_min, lon_max, lat_min, lat_max)
-        self.H = Herbie(
-            date,
-            model="hrrr",
-            product="sfc",
-            fxx=0
-        )
-        data_xr = self.__get_data(self.H, variable_name, extent, extent_name)
-        data_dict = self.__process(data_xr)
 
-        self.data_xr: xr.Dataset = data_xr
-        self.data_dict: Dict[str, Any] = data_dict
-        self.data_desc_dict: Dict[str, str] = self.__get_data_description(
-            self.H, variable_name, extent
+        try:
+            FH = FastHerbie(
+                pd.date_range(start=date, periods=1, freq="1h"), 
+                model='hrrr', 
+                fxx=range(0, 24)
+            )
+            print(reduce(lambda acc, x: str().join([acc, f"{repr(x)}\n"]), FH.objects, str()))
+        except Exception as e:
+            print("Error occurred while pulling from NOAA; try again:", e)
+            sys.exit(1)
+
+        self.data_xr = list(map(
+            lambda H: self.__get_data(H, variable_name, extent, extent_name),
+            FH.objects
+        ))
+        self.data_dict = list(map(
+            lambda d_xr: self.__process(d_xr),
+            self.data_xr
+        ))
+
+        self.data_desc_dict = self.__get_data_description(
+                FH.objects[0], 
+                variable_name, 
+                extent
         )
 
     def __get_data_description(self, H, variable_name, extent):
@@ -116,7 +130,7 @@ class HRRRProcessor:
         Returns:
             str: Path to the subset GRIB file.
         """
-        file = self.H.get_localFilePath(variable)
+        file = H.get_localFilePath(variable)
         idx_file = wgrib2.create_inventory_file(file)
         subset_file = wgrib2.region(file, extent, name=extent_name)
         return subset_file
@@ -188,6 +202,8 @@ class HRRRProcessor:
         Returns:
             xarray.Dataset: Dataset opened from the GRIB file.
         """
+        print(f"💾 Downloading from {H.grib}...")
+        H.download(variable_name)
         data_grib = self.__subregion_file(
             H=H,
             extent=extent,
