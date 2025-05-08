@@ -87,6 +87,15 @@ def size_in_MB(data):
     bytes_per_MB = 1000000
     return len(json.dumps(data).encode('utf-8')) / bytes_per_MB
 
+def add_payload_to_firebase(db, collection_name, doc_and_payload):
+    """
+    Writes the collection, document, and payload to the firebase database.
+    It's assumed that doc_and_payload is a pair, and element of dict.items()
+    """
+    doc, payload = doc_and_payload
+    db.collection(collection_name).document(doc).set(payload)
+    return doc_and_payload
+
 def write_to_firebase(db, data, collection_name):
     """
     Writes the HRRR data to a Firestore collection in Firebase.
@@ -101,9 +110,15 @@ def write_to_firebase(db, data, collection_name):
     """
     try:
         print("✏️  Attempting to write to firebase database...")
-        for doc_name, payload in data.data_dict.items():
-            db.collection(collection_name).document(doc_name).set(payload)
+        # write data description once
         db.collection(collection_name).document("description").set(data.data_desc_dict)
+
+        # write every frame
+        map(
+            lambda item: add_doc_to_firebase(db, collection_name, item),
+            data.data_dict.items()
+        )
+
         print(
             f"✅ Success! "
             f"{(size_in_MB(data.data_dict) + size_in_MB(data.data_desc_dict)):.2f}"
