@@ -30,6 +30,23 @@ def init_argparser():
     )
     return parser
 
+def dict_to_str(d):
+    """
+    Creates a pretty string of a dictionary's items
+
+    Args:
+        d (dict): The dictionary
+
+    Retunrs:
+        str: Formatted string of the dictionary's items.
+    """
+    return reduce(
+        # k_v = (key, value)
+        lambda acc, k_v: str().join([acc, f"\t{k_v[0]}: {k_v[1]}\n"]),
+        d.items(),
+        str()
+    )
+
 def data_inventory(hrrr):
     """
     Generates a human-readable summary of the processed HRRR data.
@@ -42,20 +59,17 @@ def data_inventory(hrrr):
         str: Formatted summary string showing dataset structure, key data 
         points, and metadata.
     """
-    dict_str = reduce(
-        lambda acc, k_v: str().join([acc, f"\t{k_v[0]}: {k_v[1]}\n"]),
-        hrrr.data_dict['metadata'].items(),
-        str()
-    )
     return (
         f"🗃️  Dataset inventory: {hrrr.data_xr}\n\n"
         f"🔑 Dictionary keys: {hrrr.data_dict.keys()}\n"
-        f"🚬 First mdens value: {hrrr.data_dict['mdens'][str(0)][0]}\n"
+        f"🚬 First smoke value: {hrrr.data_dict['mdens'][str(0)][0]}\n"
         f"📍 First longitude value: {hrrr.data_dict['longitude'][str(0)][0]}\n"
         f"📍 First latitude value: {hrrr.data_dict['latitude'][str(0)][0]}\n"
         f"🕰️  Time: {hrrr.data_dict['time']['data']}\n"
         f"📜 Metadata:\n"
-        f"{dict_str}"
+        f"{dict_to_str(hrrr.data_dict['metadata'])}\n"
+        f"🔬 Product description:\n"
+        f"{dict_to_str(hrrr.data_desc_dict)}"
     )
 
 def size_in_MB(data):
@@ -133,6 +147,7 @@ def main():
     )
 
     if args.print:
+        print(hrrr.data_desc_dict)
         print(data_inventory(hrrr))
 
     if args.no_write:

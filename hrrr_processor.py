@@ -17,6 +17,7 @@ class HRRRProcessor:
         data_xr (xarray.Dataset): The processed dataset in xarray format.
         data_dict (dict): A dictionary representation of the dataset including
             mass density, coordinates, time, and metadata.
+        data_desc_dict (dict): A dictionary describing the data and model.
     """
 
     def __init__(
@@ -43,11 +44,57 @@ class HRRRProcessor:
             extent_name (str): A label for the geographical extent.
         """
         extent = (lon_min, lon_max, lat_min, lat_max)
-        data_xr = self.__get_data(date, variable_name, extent, extent_name)
+        self.H = Herbie(
+            date,
+            model="hrrr",
+            product="sfc",
+            fxx=0
+        )
+        data_xr = self.__get_data(self.H, variable_name, extent, extent_name)
         data_dict = self.__process(data_xr)
 
         self.data_xr: xr.Dataset = data_xr
         self.data_dict: Dict[str, Any] = data_dict
+        self.data_desc_dict: Dict[str, str] = self.__get_data_description(
+            self.H, variable_name, extent
+        )
+
+    def __get_data_description(self, H, variable_name, extent):
+        data_description = {}
+        mdens_desc = ( 
+            "Fire emitted fine particulate matter (PM2.5, or fire smoke) "
+            "concentrations at ~8 meters above the ground." 
+        )
+        colmd_desc = (
+            "Simulated total PM2.5 mass within vertical columns over each "
+            "model grid cell. Columns are ~25 kilometers above the ground. "
+            "Product displays the effect of fire smoke load that includes "
+            "smoke in the boundary layer as well as aloft, illustrating the "
+            "integral effect of fire smoke throughout the atmosphere."
+        )
+        data_description["model_name"] = str(H.DESCRIPTION)
+        data_description["product_description"] = str(H.product_description)
+        data_description["model_description"] = (
+                "GSL's experimental Rapid Refresh - Smoke (RAP-Smoke) and "
+                "High-Resolution Rapid Refresh-Smoke (HRRR-Smoke) models "
+                "simulate the emissions and transport of smoke from wildfires "
+                "and the impact of smoke on the weather. RAP-Smoke and "
+                "HRRR-Smoke predict the 3D movement of fire-emitted fine "
+                "particulate matter (PM 2.5 or fire smoke)."
+        )
+        data_description["boundary"] = list(extent)
+        match variable_name:
+            case "MASSDEN":
+                data_description["variable_description"] = mdens_desc 
+            case "COLMD":
+                data_description["variable_description"] = colmd_desc 
+            case _:
+                raise ValueError(
+                    f"'variable_name' should be either 'COLMD' or 'MASSDEN'; "
+                    f"got {variable_name} instead."
+            )
+
+        return data_description
 
     def __subregion_file(
         self,
@@ -69,7 +116,7 @@ class HRRRProcessor:
         Returns:
             str: Path to the subset GRIB file.
         """
-        file = H.get_localFilePath(variable)
+        file = self.H.get_localFilePath(variable)
         idx_file = wgrib2.create_inventory_file(file)
         subset_file = wgrib2.region(file, extent, name=extent_name)
         return subset_file
@@ -123,7 +170,7 @@ class HRRRProcessor:
 
     def __get_data(
         self,
-        date: str,
+        H: Herbie,
         variable_name: str,
         extent: Tuple[float, float, float, float],
         extent_name: str
@@ -133,7 +180,7 @@ class HRRRProcessor:
         and region.
 
         Args:
-            date (str): Date for the HRRR data in 'YYYY-MM-DD' format.
+            H (Herbie): Herbie object configured for the data download.
             variable_name (str): Variable to download.
             extent (tuple): Tuple of (lon_min, lon_max, lat_min, lat_max).
             extent_name (str): Name of the subregion.
@@ -141,12 +188,6 @@ class HRRRProcessor:
         Returns:
             xarray.Dataset: Dataset opened from the GRIB file.
         """
-        H = Herbie(
-            date,
-            model="hrrr",
-            product="sfc",
-            fxx=0
-        )
         data_grib = self.__subregion_file(
             H=H,
             extent=extent,
@@ -161,3 +202,7 @@ class HRRRProcessor:
         )
         return data_xr
 
+'''
+    def plot(self, H, variable_name):
+        ds = H.xarray(variable_name)
+'''
