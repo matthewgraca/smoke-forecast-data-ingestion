@@ -149,6 +149,11 @@ def main():
     if args.no_write:
         print("⏭️  Skipping the write to database.")
     else:
+        '''
+        fbm = FirebaseManager()
+        db = fbm.connect_to_firebase()
+        fbm.write_to_firebase(db, hrrr)
+        '''
         db = connect_to_firebase()
         write_to_firebase(db, hrrr)
 
