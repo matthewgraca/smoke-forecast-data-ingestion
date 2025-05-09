@@ -25,13 +25,13 @@ class HRRRProcessor:
 
     def __init__(
         self,
-        date: str = "2025-01-16",
+        date: str = "2025-01-10",
         variable_name: str = "MASSDEN",
-        lon_min: float = -124.40,
-        lon_max: float = -114.13,
-        lat_min: float = 32.53,
-        lat_max: float = 42.00,
-        extent_name: str = "california_region"
+        lon_min: float = -119.1,
+        lon_max: float = -117.3,
+        lat_min: float = 33.28,
+        lat_max: float = 34.86,
+        extent_name: str = "la_subregion"
     ) -> None:
         """
         Retrieves  HRRR data for a specified geographic region and variable.
