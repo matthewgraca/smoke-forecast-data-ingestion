@@ -34,16 +34,15 @@ class HRRRProcessor:
         extent_name: str = "california_region"
     ) -> None:
         """
-        Initializes the HRRRProcessor object, retrieving and processing HRRR
-        data for a specified geographic region and variable.
+        Retrieves  HRRR data for a specified geographic region and variable.
 
         Args:
             date (str): Date of the HRRR forecast in 'YYYY-MM-DD' format.
             variable_name (str): Name of the variable to retrieve.
-            lon_min (float): Minimum longitude of the region of interest.
-            lon_max (float): Maximum longitude of the region of interest.
-            lat_min (float): Minimum latitude of the region of interest.
-            lat_max (float): Maximum latitude of the region of interest.
+            lon_min (float): Minimum longitude of the region.
+            lon_max (float): Maximum longitude of the region.
+            lat_min (float): Minimum latitude of the region.
+            lat_max (float): Maximum latitude of the region.
             extent_name (str): A label for the geographical extent.
         """
         extent = (lon_min, lon_max, lat_min, lat_max)
@@ -54,24 +53,32 @@ class HRRRProcessor:
                 model='hrrr', 
                 fxx=range(0, 24)
             )
-            print(reduce(lambda acc, x: str().join([acc, f"{repr(x)}\n"]), FH.objects, str()))
         except Exception as e:
             print("Error occurred while pulling from NOAA; try again:", e)
             sys.exit(1)
+
+        print(
+            reduce(
+                lambda acc, x: str().join([acc, f"{repr(x)}\n"]), 
+                FH.objects, 
+                str()
+            )
+        )
 
         self.data_xr = list(map(
             lambda H: self.__get_data(H, variable_name, extent, extent_name),
             FH.objects
         ))
+
         self.data_dict = list(map(
             lambda d_xr: self.__process(d_xr),
             self.data_xr
         ))
 
         self.data_desc_dict = self.__get_data_description(
-                FH.objects[0], 
-                variable_name, 
-                extent
+            FH.objects[0], 
+            variable_name, 
+            extent
         )
 
     def __get_data_description(self, H, variable_name, extent):
@@ -119,8 +126,7 @@ class HRRRProcessor:
         variable: str
     ) -> str:
         """
-        Uses wgrib2 to subregion the GRIB file for a specified variable
-        and region.
+        Uses wgrib2 to subregion the GRIB file.
 
         Args:
             H (Herbie): Herbie object configured for the data download.
@@ -241,7 +247,6 @@ class HRRRProcessor:
             str: Formatted summary string showing dataset structure, key data 
             points, and metadata.
         """
-        first_frame = self.data_dict[0]
         def dict_to_str(d):
             """
             Creates a pretty string of a dictionary's items
@@ -253,17 +258,18 @@ class HRRRProcessor:
                 str()
             )
 
+        sample = self.data_dict[0]
         return (
             f"⛈️  Number of forecasts: {len(self.data_xr)}\n"
             f"Examining a the first forecast frame...\n"
             f"🗃️  Dataset inventory: {self.data_xr[0]}\n\n"
-            f"🔑 Dictionary keys: {first_frame.keys()}\n"
-            f"🚬 First smoke value: {first_frame['mdens'][str(0)][0]}\n"
-            f"📍 First longitude value: {first_frame['longitude'][str(0)][0]}\n"
-            f"📍 First latitude value: {first_frame['latitude'][str(0)][0]}\n"
-            f"🕰️  Time: {first_frame['time']['data']}\n"
+            f"🔑 Dictionary keys: {sample.keys()}\n"
+            f"🚬 First smoke value: {sample['mdens'][str(0)][0]}\n"
+            f"📍 First longitude value: {sample['longitude'][str(0)][0]}\n"
+            f"📍 First latitude value: {sample['latitude'][str(0)][0]}\n"
+            f"🕰️  Time: {sample['time']['data']}\n"
             f"📜 Metadata:\n"
-            f"{dict_to_str(first_frame['metadata'])}\n"
+            f"{dict_to_str(sample['metadata'])}\n"
             f"🔬 Product description:\n"
             f"{dict_to_str(self.data_desc_dict)}"
         )
