@@ -75,7 +75,7 @@ class FirebaseManager:
 
             print(
                 f"✅ Success! "
-                f"{reduce(lambda acc, x: acc + self.size_in_MB(x), data.data_dict, 0):.2f}"
+                f"{reduce(lambda acc, x: acc + self.__size_in_MB(x), data.data_dict, 0):.2f}"
                 f"MB written."
             )
         except Exception as e:
