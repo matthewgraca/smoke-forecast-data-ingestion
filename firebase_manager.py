@@ -48,7 +48,7 @@ class FirebaseManager:
         try:
             print("✏️  Attempting to write to firebase database...")
             # write data description once
-            add_payload_to_firebase(
+            self.add_payload_to_firebase(
                 db=db, 
                 collection_name="hrrr-model-description", 
                 doc_and_payload=("description", data.data_desc_dict)
@@ -71,11 +71,11 @@ class FirebaseManager:
             fxx = list(map(lambda x: f"f{str(x).zfill(2)}", range(0, 24)))
             for i, d in enumerate(data.data_dict):
                 for doc_and_payload in d.items():
-                    add_payload_to_firebase(db, fxx[i], doc_and_payload)
+                    self.add_payload_to_firebase(db, fxx[i], doc_and_payload)
 
             print(
                 f"✅ Success! "
-                f"{reduce(lambda acc, x: acc + size_in_MB(x), data.data_dict, 0):.2f}"
+                f"{reduce(lambda acc, x: acc + self.size_in_MB(x), data.data_dict, 0):.2f}"
                 f"MB written."
             )
         except Exception as e:
@@ -99,6 +99,7 @@ class FirebaseManager:
             db = firestore.client()
             print("✅ Success!")
         except Exception as e:
-            print("🔴 Error occurred while connecting to firebase:", e)
+            print("🔴 Error occurred while connecting to firebase")
+            print(traceback.format_exc())
             sys.exit(1)
         return db
