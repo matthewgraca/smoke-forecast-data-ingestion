@@ -4,6 +4,7 @@ import sys
 from typing import Tuple, Dict, Any
 import pandas as pd
 from functools import reduce
+import time
 
 
 class HRRRProcessor:
@@ -203,7 +204,21 @@ class HRRRProcessor:
             xarray.Dataset: Dataset opened from the GRIB file.
         """
         print(f"💾 Downloading from {H.grib}...")
-        H.download(variable_name)
+        download_success = False
+        retries = 0
+        while not download_success and retries < 3:
+            try:
+                H.download(variable_name)
+                download_success = True
+            except ConnectionResetError as e:
+                print("🔴 Error occurred while downloading:", e)
+                print("Retrying...")
+                retries += 1
+                time.sleep(3)
+            except Exception as e:
+                print("🔴 Error occurred while downloading:", e)
+                sys.exit(1)
+
         data_grib = self.__subregion_file(
             H=H,
             extent=extent,
@@ -217,6 +232,41 @@ class HRRRProcessor:
             decode_times=False
         )
         return data_xr
+
+    def full_data_inventory(self):
+        """
+        Generates a human-readable summary of the processed HRRR data.
+
+        Returns:
+            str: Formatted summary string showing dataset structure, key data 
+            points, and metadata.
+        """
+        first_frame = self.data_dict[0]
+        def dict_to_str(d):
+            """
+            Creates a pretty string of a dictionary's items
+            """
+            return reduce(
+                # k_v = (key, value)
+                lambda acc, k_v: str().join([acc, f"\t{k_v[0]}: {k_v[1]}\n"]),
+                d.items(),
+                str()
+            )
+
+        return (
+            f"⛈️  Number of forecasts: {len(self.data_xr)}\n"
+            f"Examining a the first forecast frame...\n"
+            f"🗃️  Dataset inventory: {self.data_xr[0]}\n\n"
+            f"🔑 Dictionary keys: {first_frame.keys()}\n"
+            f"🚬 First smoke value: {first_frame['mdens'][str(0)][0]}\n"
+            f"📍 First longitude value: {first_frame['longitude'][str(0)][0]}\n"
+            f"📍 First latitude value: {first_frame['latitude'][str(0)][0]}\n"
+            f"🕰️  Time: {first_frame['time']['data']}\n"
+            f"📜 Metadata:\n"
+            f"{dict_to_str(first_frame['metadata'])}\n"
+            f"🔬 Product description:\n"
+            f"{dict_to_str(self.data_desc_dict)}"
+        )
 
 '''
     def plot(self, H, variable_name):

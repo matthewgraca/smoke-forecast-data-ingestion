@@ -32,51 +32,6 @@ def init_argparser():
     )
     return parser
 
-def dict_to_str(d):
-    """
-    Creates a pretty string of a dictionary's items
-
-    Args:
-        d (dict): The dictionary
-
-    Retunrs:
-        str: Formatted string of the dictionary's items.
-    """
-    return reduce(
-        # k_v = (key, value)
-        lambda acc, k_v: str().join([acc, f"\t{k_v[0]}: {k_v[1]}\n"]),
-        d.items(),
-        str()
-    )
-
-def data_inventory(hrrr):
-    """
-    Generates a human-readable summary of the processed HRRR data.
-
-    Args:
-        hrrr (HRRRProcessor): Instance containing xarray and dictionary-formatted
-            HRRR data.
-
-    Returns:
-        str: Formatted summary string showing dataset structure, key data 
-        points, and metadata.
-    """
-    first_frame = hrrr.data_dict[0]
-    return (
-        f"⛈️  Number of forecasts: {len(hrrr.data_xr)}\n"
-        f"Examining a the first forecast frame...\n"
-        f"🗃️  Dataset inventory: {hrrr.data_xr[0]}\n\n"
-        f"🔑 Dictionary keys: {first_frame.keys()}\n"
-        f"🚬 First smoke value: {first_frame['mdens'][str(0)][0]}\n"
-        f"📍 First longitude value: {first_frame['longitude'][str(0)][0]}\n"
-        f"📍 First latitude value: {first_frame['latitude'][str(0)][0]}\n"
-        f"🕰️  Time: {first_frame['time']['data']}\n"
-        f"📜 Metadata:\n"
-        f"{dict_to_str(first_frame['metadata'])}\n"
-        f"🔬 Product description:\n"
-        f"{dict_to_str(hrrr.data_desc_dict)}"
-    )
-
 def size_in_MB(data):
     """
     The size of the data that will be written to firebase. Approximated,
@@ -189,7 +144,7 @@ def main():
     )
 
     if args.print:
-        print(data_inventory(hrrr))
+        print(hrrr.full_data_inventory())
 
     if args.no_write:
         print("⏭️  Skipping the write to database.")
