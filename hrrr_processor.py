@@ -5,7 +5,7 @@ from typing import Tuple, Dict, Any
 import pandas as pd
 from functools import reduce
 import time
-
+import traceback
 
 class HRRRProcessor:
     """
@@ -54,7 +54,8 @@ class HRRRProcessor:
                 fxx=range(0, 24)
             )
         except Exception as e:
-            print("Error occurred while pulling from NOAA; try again:", e)
+            print("Error occurred while pulling from NOAA; try again:")
+            print(traceback.format_exec())
             sys.exit(1)
 
         print(
@@ -210,21 +211,26 @@ class HRRRProcessor:
             xarray.Dataset: Dataset opened from the GRIB file.
         """
         print(f"💾 Downloading from {H.grib}...")
-        download_success = False
-        retries = 0
-        while not download_success and retries < 3:
+        def attempt_download(H, variable_name, retries=3):
+            if retries == 0:
+                print("Retried too many times, exiting...")
+                sys.exit(1)
             try:
                 H.download(variable_name)
-                download_success = True
             except ConnectionResetError as e:
+                cooldown = 5
                 print("🔴 Error occurred while downloading:", e)
-                print("Retrying...")
-                retries += 1
-                time.sleep(3)
+                print("Waiting {cooldown} seconds before retrying...")
+                time.sleep(cooldown)
+                attempt_download(H, variable_name, retries - 1)
             except Exception as e:
-                print("🔴 Error occurred while downloading:", e)
+                print("🔴 Unchecked error occurred while downloading:", e)
+                print(traceback.format_exec())
+                print("Exiting...")
                 sys.exit(1)
+            return
 
+        attempt_download(H, variable_name)
         data_grib = self.__subregion_file(
             H=H,
             extent=extent,
