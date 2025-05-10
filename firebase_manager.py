@@ -55,23 +55,46 @@ class FirebaseManager:
             )
 
             # write every frame
-            # list() is needed to force execution of map()
-            '''
-            list(map(
-                lambda item: add_payload_to_firebase(db, item[0], item[1].items()),
-                zip(
-                    # collection names
-                    map(lambda x: f"f{str(x).zfill(2)}", range(0, 24)),
-                    # dict items
-                    data.data_dict
-                )
-            ))
-            '''
+            def populate_db(db, data):
+                """
+                Adds every frame of the data to the database:
+                Example:
+                    db[collection][documents][field]
+                    db['f00']['mdens']['0'] = [...]
+                """
+                def forecast_times():
+                    return list(
+                        map(lambda xx: f"f{str(xx).zfill(2)}", range(24))
+                    )
+                
+                def add_forecast_and_payload(db, fxx, d):
+                    return list(
+                        map(
+                            lambda item: self.add_payload_to_firebase(
+                                db, fxx, item
+                            ), 
+                            d.items()
+                        )
+                    )
 
+                return list(
+                    map(
+                        # pair[0] = fxx, pair[1] = (doc, payload)
+                        lambda pair: add_forecast_and_payload(
+                            db, pair[0], pair[1]
+                        ),
+                        zip(forecast_times(), data.data_dict)
+                    )
+                )
+
+            populate_db(db, data)
+            '''
+            # keeping old implementation that I know works here as a comment
             fxx = list(map(lambda x: f"f{str(x).zfill(2)}", range(0, 24)))
             for i, d in enumerate(data.data_dict):
                 for doc_and_payload in d.items():
                     self.add_payload_to_firebase(db, fxx[i], doc_and_payload)
+            '''
 
             print(
                 f"✅ Success! "
