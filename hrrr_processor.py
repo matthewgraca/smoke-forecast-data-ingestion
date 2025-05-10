@@ -6,6 +6,7 @@ import pandas as pd
 from functools import reduce
 import time
 import traceback
+import requests
 
 class HRRRProcessor:
     """
@@ -217,7 +218,10 @@ class HRRRProcessor:
                 sys.exit(1)
             try:
                 H.download(variable_name)
-            except ConnectionResetError as e:
+            except (
+                ConnectionResetError, 
+                requests.exceptions.ConnectionError
+            ) as e:
                 cooldown = 5
                 print("🔴 Error occurred while downloading:", e)
                 print("Waiting {cooldown} seconds before retrying...")
@@ -225,8 +229,8 @@ class HRRRProcessor:
                 attempt_download(H, variable_name, retries - 1)
             except Exception as e:
                 print("🔴 Unchecked error occurred while downloading:", e)
-                print(traceback.format_exec())
                 print("Exiting...")
+                print(traceback.format_exec())
                 sys.exit(1)
             return
 
