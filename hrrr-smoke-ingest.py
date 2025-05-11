@@ -4,6 +4,7 @@ from firebase_manager import FirebaseManager
 import argparse
 import datetime as dt
 from datetime import datetime, timedelta
+import time
 
 def init_argparser():
     """ 
@@ -34,15 +35,15 @@ def wait_until(time_to_ingest, freq):
     Separate from wait for grib so we ping AWS as little as possible.
     """
     while datetime.now(dt.UTC) < time_to_ingest:
-        sleep(freq)
+        time.sleep(freq)
 
 def wait_for_grib(time_to_ingest, freq):
     """
-    ping for data. look for 23th hour forecast; if it exists, [0, 22] will exist 
+    Ping for data. look for 23th hour forecast; if it exists, [0, 22] will exist 
     """
     H = Herbie(date=tomorrow_dt, model='hrrr', fxx=23)
     while H.grib is None:
-        sleep(freq)
+        time.sleep(freq)
         H = Herbie(date=tomorrow_dt, model='hrrr', fxx=23)
 
 def main():
