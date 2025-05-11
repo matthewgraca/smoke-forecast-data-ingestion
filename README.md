@@ -29,16 +29,18 @@ echo $GOOGLE_APPLICATION_CREDENTIALS
     - Comes with useful optional args. See: `python hrrr-smoke-ingest.py -h`
 ## Accessing variables
 Suppose `i` and `j` are indices. There are currently five variables you have access to. Please note the dimensions of the variables are (y, x):
+- Data structure:
+    - `db[forecast frame][data variable][y][x]`
 - `mdens` -- this is "mass density", i.e. the concentration of smoke 8 meters above ground, in $\frac{kg}{m^3}$.
-    - Access: `db['hrrr-smoke-data']['mdens']`
-    - Individual values: `db['hrrr-smoke-data']['mdens'][str(i)][j]`
+    - Access: `db['f00']['mdens']`
+    - Individual values: `db['f00']['mdens'][str(i)][j]`
 - `longitude`, `latitude` -- simply location
-    - Access: `db['hrrr-smoke-data']['longitude']` and `db['hrrr-smoke-data']['latitude']` 
-    - Individual values: `db['hrrr-smoke-data']['longitude'][str(i)][j]` and `db['hrrr-smoke-data']['latitude'][str(i)][j]`
+    - Access: `db['f00']['longitude']` and `db['f00']['latitude']` 
+    - Individual values: `db['f00']['longitude'][str(i)][j]` and `db['f00']['latitude'][str(i)][j]`
 - `time` -- the time of the forecast
-    - Access: `db['hrrr-smoke-data']['time']['data']`
+    - Access: `db['f00']['time']['data']`
 - `metadata` -- tells you information on how to plot this thing; things like how it uses Lambert Conformal Conical Projection, etc.
-    - Access: `db['hrrr-smoke-data']['metadata']`
+    - Access: `db['f00']['metadata']`
 # Data info
 ```
 🗃️ Dataset inventory: <xarray.Dataset> Size: 92kB
