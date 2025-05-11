@@ -1,6 +1,9 @@
 from hrrr_processor import HRRRProcessor
+from herbie import Herbie
 from firebase_manager import FirebaseManager
 import argparse
+import datetime as dt
+from datetime import datetime, timedelta
 
 def init_argparser():
     """ 
@@ -25,12 +28,24 @@ def init_argparser():
     )
     return parser
 
+def wait_until(time_to_ingest, freq):
+    """
+    Waits until the given date arrives, checking at the given frequency.
+    Separate from wait for grib so we ping AWS as little as possible.
+    """
+    while datetime.now(dt.UTC) < time_to_ingest:
+        sleep(freq)
+
+def wait_for_grib(time_to_ingest, freq):
+    """
+    ping for data. look for 23th hour forecast; if it exists, [0, 22] will exist 
+    """
+    H = Herbie(date=tomorrow_dt, model='hrrr', fxx=23)
+    while H.grib is None:
+        sleep(freq)
+        H = Herbie(date=tomorrow_dt, model='hrrr', fxx=23)
+
 def main():
-    """
-    Entry point of the script. Processes HRRR data for a specific region
-    and date, optionally prints the data inventory, and writes the data
-    to Firebase unless suppressed with a command-line argument.
-    """
     parser = init_argparser()
     args = parser.parse_args()
 
@@ -44,6 +59,40 @@ def main():
         extent_name='la_subregion'
     )
 
+    """ deploy when ready
+    today_dt = datetime.now(dt.UTC)
+    while True:
+        tomorrow_dt = today_dt.replace(second=0, hour=0, minute=0) + timedelta(days=1)
+
+        # check if tomorrow + 1 hour has arrrived; usually takes an hour to upload
+        wait_until(time_to_ingest=tomorrow_dt + timedelta(hours=1), freq=5 * 60)
+        wait_for_grib(time_to_ingest=tomorrow_dt, freq=5 * 60)
+
+        # data should exist at this point -- send it
+        hrrr = HRRRProcessor(
+            date=tomorrow_dt,
+            variable_name='MASSDEN',
+            lon_min=-119.1,
+            lon_max=-117.3,
+            lat_min=33.28,
+            lat_max=34.86,
+            extent_name='la_subregion'
+        ) 
+        
+        if args.print:
+            print(hrrr.full_data_inventory())
+
+        if args.no_write:
+            print("⏭️  Skipping the write to database.")
+        else:
+            fbm = FirebaseManager()
+            db = fbm.connect_to_firebase()
+            fbm.write_to_firebase(db, hrrr)
+
+        # repeat
+        today_dt = tomorrow_dt
+    """
+    
     if args.print:
         print(hrrr.full_data_inventory())
 
