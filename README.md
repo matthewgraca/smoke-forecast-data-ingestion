@@ -1,5 +1,5 @@
 # Setup
-You can follow this guide here: https://firebase.google.com/docs/admin/setup#python
+**NOTE**: If you don't care about Firebase and just want to ingest the HRRR data, then ignore the firebase steps.
 1. Download packages. We use `conda`.
 ``` bash
 conda env create -f environment.yml
@@ -27,6 +27,7 @@ echo $GOOGLE_APPLICATION_CREDENTIALS
 2. Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to path of your service account json file.
 3. Run the script `python hrrr-smoke-ingest.py`
     - Comes with useful optional args. See: `python hrrr-smoke-ingest.py -h`
+    - If you don't have firebase setup or just want to see the HRRR data ingestion, you can use: `python hrrr-smoke-ingest.py -nw -p`, which ingests and prints the data and does not access the firebase database.
 ## Accessing variables
 Suppose `i` and `j` are indices. There are currently five variables you have access to. Please note the dimensions of the variables are (y, x):
 - Data structure:
