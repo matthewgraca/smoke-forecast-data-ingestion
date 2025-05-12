@@ -60,7 +60,12 @@ def main():
         extent_name='la_subregion'
     )
 
-    """ deploy when ready
+    """ 
+    unfortunately, python has no tail call optimization;
+    so this can't be converted to a recursive function at all, so this portion
+    of the code can't be converted functionally. 
+    """
+    """
     today_dt = datetime.now(dt.UTC)
     while True:
         tomorrow_dt = today_dt.replace(second=0, hour=0, minute=0) + timedelta(days=1)

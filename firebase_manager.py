@@ -89,7 +89,10 @@ class FirebaseManager:
 
             populate_db(db, data)
             '''
-            # keeping old implementation that I know works here as a comment
+            keeping old implementation that I know works here as a comment,
+            just in case
+            '''
+            '''
             fxx = list(map(lambda x: f"f{str(x).zfill(2)}", range(0, 24)))
             for i, d in enumerate(data.data_dict):
                 for doc_and_payload in d.items():

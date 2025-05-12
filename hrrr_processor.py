@@ -283,8 +283,3 @@ class HRRRProcessor:
             f"🔬 Product description:\n"
             f"{dict_to_str(self.data_desc_dict)}"
         )
-
-'''
-    def plot(self, H, variable_name):
-        ds = H.xarray(variable_name)
-'''
